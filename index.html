@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send an E-Card</title>
+    <style>
+        body,
+        html {
+            
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://ideas.baudville.com/wp-content/uploads/2023/09/itemeditorimage_645a86b7c270e.webp') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px; 
+            display: flex;
+            margin-top: 20px; 
+            margin-bottom: 20px; 
+            justify-content: center;
+            align-items: center;
+            /*padding: 20px; */
+        }
+
+        .e-card-form {
+            width: 100%;
+            max-width: 500px; 
+            padding: 2rem;
+            margin: 20px auto; 
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .e-card-form h1 {
+            margin-bottom: 1rem;
+            color: #0056b3;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type='text'], input[type='email'], select, textarea {
+            padding: 10px;
+            margin-top: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .e-card-form {
+                padding: 1rem;
+                width: 90%; 
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            .e-card-form {
+                width: 100%; 
+            }
+        }
+
+        #cc-group {
+            margin-bottom: 4rem; 
+        }
+
+        .ui-autocomplete {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: .5rem;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px;
+            background-color: #004085;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .btn:hover {
+            background-color: #002752;
+        }
+
+        #previewContainer {
+            position: relative;
+            width: 100%; 
+            margin-top: 20px;
+            padding: 10px; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); 
+            background: #fff; 
+            border-radius: 10px;
+            text-align: center; 
+            overflow: hidden;
+        }
+        
+        #previewContainer img {
+            max-width: 100%;
+            max-height: 500px; 
+            height: auto;
+            margin: 0 auto; 
+        }
+
+        #previewContainer button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 20px; 
+            box-shadow: 0 0 10px #000;
+            z-index: 100;
+        }
+        
+        .to-emails {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .cc-field-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+
+        .cc-field-container input {
+            flex: 1;
+            border: none;
+            padding: 5px;
+        }
+
+        .ccEmails {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .email-tag {
+            margin: 5px;
+            padding: 5px;
+            background-color: #e4e4e4;
+            border-radius: 5px;
+            display: flex;
+            flex-shrink: 1;
+            align-items: center;
+            justify-content: center;
+        }
+        .remove-email {
+            margin-left: 10px;
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="e-card-form">
+            <h1>Send an E-Card</h1>
+            <form id="ecardForm">
+                <div class="form-group">
+                    <label for="from">From:</label>
+                    <input type="text" id="from" name="from" required>
+                </div>
+                <div class="form-group">
+                    <label for="to">To:</label>
+                    <input type="text" id="to" name="to" required>
+                </div>
+                <div class="form-group" id="cc-group">
+                    <label for="cc">Cc:</label>
+                    <div class="cc-field-container">
+                        <input type="text" id="cc" name="cc" placeholder="Enter recipient's name">
+                        <div id="cc-emails" class="cc-emails">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="template">Choose an E-Card Template:</label>
+                        <select id="template" name="template">
+                            <option
+                                value="https://guardianfueltech.sharepoint.com/sites/GuardianFueling-Home/ECard%20Template/Appreciate_You.png?csf=1&web=1&e=vbNMCE&cid=b9aeaead-be36-430a-9a7d-519b62c1c957">
+                                Appreciation(Green Leaves design card)</option>
+                            <option
+                                value="https://guardianfueltech.sharepoint.com/sites/GuardianFueling-Home/ECard%20Template/Happy_Birthday.png?csf=1&web=1&e=s8TXet&cid=2ed9b13f-56db-49a4-91bf-d4bd4d59d29b">
+                                Happy-Birthday (Blue & White Party Caps design card)</option>
+                            <option
+                                value="https://guardianfueltech.sharepoint.com/sites/GuardianFueling-Home/ECard%20Template/Thank%20You%20Note.png?csf=1&web=1&e=d7d7gR">
+                                Thank-You(Brown and Yellow Note card)</option>
+                            <option
+                                value="https://guardianfueltech.sharepoint.com/sites/GuardianFueling-Home/ECard%20Template/Well_done.png?csf=1&web=1&e=bAWXTV&cid=2025bedf-7f77-40d9-a7b0-3b869e6037ea">
+                                Well-Done(Teal design card)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Your Message:</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    <div class="button-container">
+                        <button id="previewButton" type="button" class="btn">Preview</button>
+                        <button type="submit" class="btn">Send</button>
+                    </div>
+            </form>
+            <div id="previewContainer"></div>
+        </div>
+    </div>
+
+
+    <script>
+        document.getElementById('ecardForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            console.log('Form Submitted');
+            
+            const ccEmails = [];
+                $('.email-tag').each(function() {
+                    const email = $(this).text().slice(0, -1).trim();
+                    ccEmails.push(email);
+                });
+            // Get the form data
+            const formData = {
+                from: document.getElementById('from').value,
+                to: document.getElementById('to').value,
+                cc: ccEmails.join('; '),
+                template: document.getElementById('template').value,
+                message: document.getElementById('message').value,
+                subject: "You've received an E-Card!",
+            };
+
+            // AJAX request to the server
+            fetch('https://gftue2pecaaws01.azurewebsites.net/api/sendEcard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('E-Card sent successfully!');
+                })
+                .catch((error) => {
+                    alert('Error sending e-card. ' + error.message);
+                    console.error('Error:', error);
+                });
+        });
+        $(document).ready(function () {
+            
+            function previewEcard() {
+              // Get the form data
+              const formData = {
+                template: document.getElementById('template').value,
+                message: document.getElementById('message').value,
+              };
+              
+              // AJAX request to the server for the preview
+              fetch('/api/previewEcard', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+              })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.text();
+              })
+              .then(data => {
+                const image = new Image();
+                image.src = data;
+                image.style.maxWidth = '70%';
+                image.style.maxHeight = '350px';
+                image.onload = () => {
+                  const previewContainer = document.getElementById('previewContainer');
+                  previewContainer.innerHTML = ''; // Clear any previous previews
+                  
+                  // Create a close button
+                  const closeButton = document.createElement('button');
+                  closeButton.textContent = 'X';
+                  closeButton.onclick = function() {
+                    // Clear the preview container when clicked
+                    previewContainer.innerHTML = '';
+                  };
+            
+                  // Append the close button to the preview container
+                  previewContainer.appendChild(closeButton);
+            
+                  // Append image after the close button
+                  previewContainer.appendChild(image);
+                };
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+            }
+            
+            document.getElementById('previewButton').addEventListener('click', previewEcard);
+            document.getElementById('previewContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            var toEmail; 
+            var ccEmails = []; 
+
+            // create an email tag
+            function createEmailTag(email, containerId) {
+                // Prevent duplicate tags
+                if (ccEmails.includes(email)) {
+                    return;
+                }
+
+                // Add the email to the ccEmails array
+                ccEmails.push(email);
+                var emailTag = $('<span class="email-tag">' + email +
+                    '<span class="remove-email" onclick="removeEmailTag(this, \'' + email + '\')">x</span></span>');
+                $('#' + containerId).append(emailTag);
+            }
+
+            // remove an email tag
+            window.removeEmailTag = function (element, email) {
+                // Remove the email from the ccEmails array
+                ccEmails = ccEmails.filter(function (e) { return e !== email; });
+                $(element).parent().remove();
+            }
+
+            // Autocomplete for the 'to' field
+            $('#to').autocomplete({
+                source: function (request, response) {
+                    $.getJSON('https://gftue2pecaaws01.azurewebsites.net/api/employees/search', { term: request.term }, function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.name + " (" + item.work_email + ")",
+                                value: item.work_email,
+                                manager_email: item.manager_email
+                            };
+                        }));
+                    });
+                },
+                select: function (event, ui) {
+                    $(this).val(ui.item.value);
+                    createEmailTag(ui.item.manager_email, 'cc-emails');
+                    return false; 
+                }
+            });
+
+            // Autocomplete for the 'from' field with auto-population of the 'cc' field
+            $('#from').autocomplete({
+                source: function (request, response) {
+                    $.getJSON('https://gftue2pecaaws01.azurewebsites.net/api/employees/search', { term: request.term }, function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.name + " (" + item.work_email + ")",
+                                value: item.work_email
+                                //manager_email: item.manager_email
+                            };
+                        }));
+                    });
+                },
+                select: function (event, ui) {
+                    $(this).val(ui.item.value);
+                    //createEmailTag(ui.item.manager_email, 'cc-emails');
+                    return false;
+                }
+            });
+
+            // Autocomplete for the 'cc' field to add multiple recipients
+            $('#cc').on('keydown', function (event) {
+                if (event.key === "Enter") {
+                    // Prevent form submission on enter key
+                    event.preventDefault();
+                    return false;
+                }
+            }).autocomplete({
+                source: function (request, response) {
+                    $.getJSON('https://gftue2pecaaws01.azurewebsites.net/api/employees/search', { term: request.term.split(/,\s*/).pop() }, function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.name + " (" + item.work_email + ")",
+                                value: item.work_email
+                            };
+                        }));
+                    });
+                },
+                focus: function () {
+                    return false;
+                },
+                select: function (event, ui) {
+                    var terms = this.value.split(/,\s*/);
+                    terms.pop();
+                    terms.push(ui.item.value);
+                    terms.push("");
+                    this.value = terms.join(", ");
+                    createEmailTag(ui.item.value, 'cc-emails');
+                    $(this).val('');
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
