@@ -209,7 +209,7 @@ app.post('/api/sendEcard', async (req, res) => {
     try {
         const imageBuffer = await overlayTextOnImage(template, message);
         const emailResult = await sendEmail({
-                      from: " No-Reply@guardianfueltech.com",
+                      from: process.env.user_NoReply,
                       to: to,
                       cc: cc,
                       replyTo: from,
